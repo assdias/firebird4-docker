@@ -12,9 +12,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV FBURL=https://github.com/FirebirdSQL/firebird/releases/download/v4.0.2/Firebird-4.0.2.2816-0.tar.xz
 ENV DBPATH=/firebird/data
 
-COPY fixes /home/fixes
+# Criar o diretório fixes
+RUN mkdir -p /home/fixes
+
+# Atribuir permissões ao diretório fixes
 RUN chmod -R +x /home/fixes
 
+# Continuar com o processo de build
 COPY build.sh ./build.sh
 
 RUN chmod +x ./build.sh && \
