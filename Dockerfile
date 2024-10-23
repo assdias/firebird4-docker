@@ -3,9 +3,6 @@ FROM ubuntu:20.04 AS build
 
 LABEL maintainer="jacob.alberty@foundigital.com"
 
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
-
 ENV PREFIX=/usr/local/firebird
 ENV VOLUME=/firebird
 ENV DEBIAN_FRONTEND=noninteractive
@@ -33,7 +30,7 @@ RUN chmod +x ./build.sh && \
     ./build.sh && \
     rm -f ./build.sh
 
-# Etapa final: adicionar Firebird e Adminer
+# Etapa final: adicionar Firebird
 FROM ubuntu:20.04
 
 # Variáveis de ambiente
@@ -42,8 +39,8 @@ ENV VOLUME=/firebird
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DBPATH=/firebird/data
 
-# Expor portas para Firebird (3050) e Adminer (8080)
-EXPOSE 3050/tcp 8080/tcp
+# Expor porta para Firebird (3050)
+EXPOSE 3050/tcp
 
 # Volume para armazenamento de dados do Firebird
 VOLUME ["/firebird"]
@@ -71,31 +68,5 @@ RUN chmod +x ${PREFIX}/docker-healthcheck.sh && \
 
 HEALTHCHECK CMD ["${PREFIX}/docker-healthcheck.sh"]
 
-# Instalar PHP 7.4 e dependências para Adminer
-RUN apt-get update && apt-get install -y \
-    wget \
-    software-properties-common \
-    && add-apt-repository ppa:ondrej/php -y \
-    && apt-get update && \
-    apt-get install -y \
-    php7.4 \
-    php7.4-fpm \
-    php7.4-pgsql \
-    php7.4-sqlite3 \
-    php7.4-mysql \
-    php-pear \
-    && pecl install firebird \
-    && docker-php-ext-enable firebird
-
-# Baixar e configurar o Adminer
-RUN mkdir -p /var/www/adminer && \
-    wget "https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php" -O /var/www/adminer/index.php
-
-# Instalar NGINX para servir o Adminer
-RUN apt-get install -y nginx
-
-# Copiar o arquivo de configuração do NGINX para o Adminer
-COPY adminer.conf /etc/nginx/sites-available/default
-
-# Comandos para iniciar tanto o Firebird quanto o NGINX (Adminer)
-CMD ["sh", "-c", "service nginx start && ${PREFIX}/docker-entrypoint.sh && firebird"]
+# Comandos para iniciar o Firebird
+CMD ["${PREFIX}/docker-entrypoint.sh", "firebird"]

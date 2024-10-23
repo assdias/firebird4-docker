@@ -2,25 +2,16 @@ version: '3.8'
 
 services:
   firebird:
-    build: .
-    container_name: firebird-container
-    ports:
-      - "3050:3050"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: firebird_container
     volumes:
-      - firebird-data:/firebird
-    healthcheck:
-      test: ["CMD", "/usr/local/firebird/docker-healthcheck.sh"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  adminer:
-    image: adminer
-    container_name: adminer-container
-    environment:
-      ADMINER_DEFAULT_SERVER: firebird
+      - firebird_data:/firebird
     ports:
-      - "8080:8080"
+      - "3050:3050"  # Porta do Firebird
+    environment:
+      - DBPATH=/firebird/data  # Configura o caminho do banco de dados
 
 volumes:
-  firebird-data:
+  firebird_data:
