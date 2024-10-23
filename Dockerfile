@@ -1,6 +1,5 @@
 # Etapa de build do Firebird
-#FROM --platform=$BUILDPLATFORM debian:bullseye-slim AS build
-FROM ubuntu:20.04
+FROM ubuntu:20.04 AS build
 
 LABEL maintainer="jacob.alberty@foundigital.com"
 
@@ -13,13 +12,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV FBURL=https://github.com/FirebirdSQL/firebird/releases/download/v4.0.2/Firebird-4.0.2.2816-0.tar.xz
 ENV DBPATH=/firebird/data
 
-# Criar o diretório fixes
-RUN mkdir -p /home/fixes
+# Criar o diretório fixes e atribuir permissões
+RUN mkdir -p /home/fixes && \
+    chmod -R +x /home/fixes
 
-# Atribuir permissões ao diretório fixes
-RUN chmod -R +x /home/fixes
-
-# Instalar utilitário
+# Instalar utilitários necessários
 RUN apt-get update && apt-get install -y \
     wget \
     tar \
@@ -30,13 +27,14 @@ RUN apt-get update && apt-get install -y \
 # Copiar o script de build
 COPY build.sh ./build.sh
 
+# Executar o script de build
 RUN chmod +x ./build.sh && \
     sync && \
     ./build.sh && \
     rm -f ./build.sh
 
 # Etapa final: adicionar Firebird e Adminer
-FROM --platform=$TARGETPLATFORM debian:bullseye-slim
+FROM ubuntu:20.04
 
 # Variáveis de ambiente
 ENV PREFIX=/usr/local/firebird
@@ -66,28 +64,26 @@ RUN chmod +x ${PREFIX}/docker-entrypoint.sh
 
 # Copiar script de verificação de saúde (healthcheck)
 COPY docker-healthcheck.sh ${PREFIX}/docker-healthcheck.sh
-RUN chmod +x ${PREFIX}/docker-healthcheck.sh \
-    && apt-get update \
-    && apt-get -qy install netcat \
-    && rm -rf /var/lib/apt/lists/*
+RUN chmod +x ${PREFIX}/docker-healthcheck.sh && \
+    apt-get update && \
+    apt-get install -y netcat && \
+    rm -rf /var/lib/apt/lists/*
+
 HEALTHCHECK CMD ["${PREFIX}/docker-healthcheck.sh"]
 
-# Instalar Adminer (gerenciador web)
-#RUN apt-get update && apt-get install -y php php-fpm php-pgsql php-sqlite3 php-mysql php-firebird
-
+# Instalar PHP e dependências para Adminer
 RUN apt-get update && apt-get install -y \
     wget \
     software-properties-common \
-    && add-apt-repository ppa:ondrej/php \
-    && apt-get update \
-    && apt-get install -y \
+    && add-apt-repository ppa:ondrej/php -y \
+    && apt-get update && \
+    apt-get install -y \
     php \
     php-fpm \
     php-pgsql \
     php-sqlite3 \
     php-mysql \
-    php7.x-firebird # substitua 7.x pela versão correta do PHP
-	
+    php7.4-firebird # Substitua 7.4 pela versão correta do PHP
 
 # Baixar e configurar o Adminer
 RUN mkdir -p /var/www/adminer && \
@@ -98,9 +94,6 @@ RUN apt-get install -y nginx
 
 # Copiar o arquivo de configuração do NGINX para o Adminer
 COPY adminer.conf /etc/nginx/sites-available/default
-
-# Expor as portas necessárias para Firebird e Adminer
-EXPOSE 3050 8080
 
 # Comandos para iniciar tanto o Firebird quanto o NGINX (Adminer)
 CMD ["sh", "-c", "service nginx start && ${PREFIX}/docker-entrypoint.sh && firebird"]
