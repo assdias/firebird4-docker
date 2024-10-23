@@ -83,7 +83,9 @@ RUN apt-get update && apt-get install -y \
     php-pgsql \
     php-sqlite3 \
     php-mysql \
-    php7.4-firebird # Substitua 7.4 pela versão correta do PHP
+    php-pear \
+    && pecl install firebird && \
+    docker-php-ext-enable firebird
 
 # Baixar e configurar o Adminer
 RUN mkdir -p /var/www/adminer && \
