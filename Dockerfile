@@ -18,7 +18,10 @@ RUN mkdir -p /home/fixes
 # Atribuir permissões ao diretório fixes
 RUN chmod -R +x /home/fixes
 
-# Continuar com o processo de build
+# Instalar wget e tar
+RUN apt-get update && apt-get install -y wget tar && rm -rf /var/lib/apt/lists/*
+
+# Copiar o script de build
 COPY build.sh ./build.sh
 
 RUN chmod +x ./build.sh && \
