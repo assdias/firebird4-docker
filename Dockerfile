@@ -71,21 +71,21 @@ RUN chmod +x ${PREFIX}/docker-healthcheck.sh && \
 
 HEALTHCHECK CMD ["${PREFIX}/docker-healthcheck.sh"]
 
-# Instalar PHP e dependências para Adminer
+# Instalar PHP 7.4 e dependências para Adminer
 RUN apt-get update && apt-get install -y \
     wget \
     software-properties-common \
     && add-apt-repository ppa:ondrej/php -y \
     && apt-get update && \
     apt-get install -y \
-    php \
-    php-fpm \
-    php-pgsql \
-    php-sqlite3 \
-    php-mysql \
+    php7.4 \
+    php7.4-fpm \
+    php7.4-pgsql \
+    php7.4-sqlite3 \
+    php7.4-mysql \
     php-pear \
-    && pecl install firebird && \
-    docker-php-ext-enable firebird
+    && pecl install firebird \
+    && docker-php-ext-enable firebird
 
 # Baixar e configurar o Adminer
 RUN mkdir -p /var/www/adminer && \
