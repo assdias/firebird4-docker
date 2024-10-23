@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  firebird:
+    build: .
+    container_name: firebird-container
+    ports:
+      - "3050:3050"
+    volumes:
+      - firebird-data:/firebird
+    healthcheck:
+      test: ["CMD", "/usr/local/firebird/docker-healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  adminer:
+    image: adminer
+    container_name: adminer-container
+    environment:
+      ADMINER_DEFAULT_SERVER: firebird
+    ports:
+      - "8080:8080"
+
+volumes:
+  firebird-data:
