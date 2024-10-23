@@ -4,3 +4,6 @@
 wget $FBURL -O /tmp/firebird.tar.xz
 mkdir -p $PREFIX
 tar -xf /tmp/firebird.tar.xz -C $PREFIX --strip-components=1
+
+# Compressão do diretório de instalação em firebird.tar.gz
+tar -czf /home/firebird/firebird.tar.gz -C $PREFIX .
