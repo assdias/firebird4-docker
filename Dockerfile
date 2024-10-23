@@ -1,5 +1,6 @@
 # Etapa de build do Firebird
-FROM --platform=$BUILDPLATFORM debian:bullseye-slim AS build
+#FROM --platform=$BUILDPLATFORM debian:bullseye-slim AS build
+FROM ubuntu:20.04
 
 LABEL maintainer="jacob.alberty@foundigital.com"
 
@@ -72,7 +73,21 @@ RUN chmod +x ${PREFIX}/docker-healthcheck.sh \
 HEALTHCHECK CMD ["${PREFIX}/docker-healthcheck.sh"]
 
 # Instalar Adminer (gerenciador web)
-RUN apt-get update && apt-get install -y php php-fpm php-pgsql php-sqlite3 php-mysql php-firebird
+#RUN apt-get update && apt-get install -y php php-fpm php-pgsql php-sqlite3 php-mysql php-firebird
+
+RUN apt-get update && apt-get install -y \
+    wget \
+    software-properties-common \
+    && add-apt-repository ppa:ondrej/php \
+    && apt-get update \
+    && apt-get install -y \
+    php \
+    php-fpm \
+    php-pgsql \
+    php-sqlite3 \
+    php-mysql \
+    php7.x-firebird # substitua 7.x pela versão correta do PHP
+	
 
 # Baixar e configurar o Adminer
 RUN mkdir -p /var/www/adminer && \
